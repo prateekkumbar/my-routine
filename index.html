@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Routine — skincare planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #f7f8f4;
+    --card: #ffffff;
+    --ink: #3a4a42;
+    --ink-soft: #7b8880;
+    --sage: #7c9885;
+    --sage-deep: #56705f;
+    --rose: #c1707a;
+    --rose-deep: #a85761;
+    --gold: #c9a66b;
+    --gold-deep: #9c7a2f;
+    --line: #e4e7df;
+    --am: #d99b58;
+    --pm: #6b7fa3;
+    --radius: 18px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:640px; margin:0 auto; padding:0 20px 110px; }
+  header{ padding:44px 0 20px; border-bottom:1px solid var(--line); margin-bottom:20px; }
+  .eyebrow{
+    display:flex; align-items:center; gap:7px;
+    font-family:'IBM Plex Mono',monospace; font-size:11px;
+    letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--rose-deep); margin-bottom:12px;
+  }
+  h1{ font-family:'Fraunces',serif; font-weight:400; font-size:34px; margin:0 0 6px; letter-spacing:0.01em; color:#5a6b61; }
+  .tagline{ font-family:'Fraunces',serif; font-style:italic; font-size:14.5px; color:var(--ink-soft); margin:0 0 20px; }
+
+  .week-nav{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .nav-arrow{
+    width:36px; height:36px; border-radius:50%;
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .nav-arrow:hover{background:#eef0e9;}
+  .nav-arrow:active{transform:scale(0.94);}
+  .week-range-btn{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+    background:none; border:none; cursor:pointer; padding:8px 10px;
+    border-radius:10px; color:var(--ink); font-family:'Inter',sans-serif;
+  }
+  .week-range-btn:hover{background:#eef0e9;}
+  .week-range-btn .wr-text{ font-size:14.5px; font-weight:600; }
+  .week-range-btn .wr-sub{ font-size:11.5px; color:var(--ink-soft); }
+  .today-pill{
+    display:inline-block; margin-top:10px; font-size:11.5px;
+    color:var(--sage-deep); background:#eaf0e9; padding:4px 10px;
+    border-radius:20px; cursor:pointer; border:none; font-family:'Inter',sans-serif;
+  }
+
+  .tabs{
+    display:grid; grid-template-columns:1fr 1fr;
+    background:#ecefe6; border-radius:14px; padding:4px; margin:18px 0 20px;
+  }
+  .tab{
+    padding:10px; border:none; background:none; border-radius:11px;
+    font-family:'Inter',sans-serif; font-size:13.5px; font-weight:600;
+    color:var(--ink-soft); cursor:pointer;
+  }
+  .tab.active{ background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(31,46,40,0.08); }
+
+  .day-picker{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin:0 0 16px; }
+  .day-pill{
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    padding:9px 2px; border-radius:12px; border:1px solid var(--line);
+    background:#fff; cursor:pointer; color:var(--ink-soft); position:relative;
+  }
+  .day-pill .dname{ font-size:9.5px; font-weight:600; text-transform:uppercase; }
+  .day-pill .dnum{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink); }
+  .day-pill.selected{ background:var(--sage); border-color:var(--sage); }
+  .day-pill.selected .dname, .day-pill.selected .dnum{ color:#fff; }
+  .day-pill.today:not(.selected){ border-color:var(--gold); }
+  .day-pill .load-dots{ display:flex; gap:2px; height:4px; margin-top:1px; }
+  .day-pill .load-dots i{ width:4px; height:4px; border-radius:50%; background:#c9d2c6; }
+  .day-pill.selected .load-dots i{ background:rgba(255,255,255,0.6); }
+  .day-pill .load-dots i.done{ background:var(--sage); }
+  .day-pill.selected .load-dots i.done{ background:#b6e0c0; }
+
+  .checklist-day-title{
+    font-family:'Fraunces',serif; font-size:20px; font-weight:400; margin:4px 0 4px; color:#5a6b61;
+  }
+  .checklist-day-sub{ font-size:12.5px; color:var(--ink-soft); margin:0 0 16px; }
+  .slot-section{ margin-bottom:20px; }
+  .slot-head{
+    display:flex; align-items:center; gap:6px;
+    font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;
+    margin-bottom:8px;
+  }
+  .slot-head.am{ color:var(--am); }
+  .slot-head.pm{ color:var(--pm); }
+  .check-item{
+    display:flex; align-items:center; gap:12px;
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:14px 16px; margin-bottom:8px; cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .check-item:active{ transform:scale(0.99); }
+  .check-item .box{
+    width:22px; height:22px; border-radius:8px;
+    border:1.5px solid #c9d2c6; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; color:#fff;
+    transition:background 0.15s ease, border-color 0.15s ease;
+  }
+  .check-item.done{ border-color:var(--sage); background:#f4f8f3; }
+  .check-item.done .box{ background:var(--sage); border-color:var(--sage); }
+  .check-item .ci-name{ font-size:14.5px; font-weight:500; flex:1; }
+  .check-item.done .ci-name{ color:var(--sage-deep); }
+  .check-item .ci-note{ font-size:11px; color:var(--ink-soft); }
+  .slot-empty{ font-size:12.5px; color:#a7b0a9; font-style:italic; padding:4px 2px 8px; }
+  .rest-day{
+    text-align:center; padding:40px 20px; color:var(--ink-soft);
+    background:#fff; border:1px dashed var(--line); border-radius:var(--radius);
+  }
+  .rest-day p{ margin:4px 0; font-size:14px; }
+  .day-complete-banner{
+    display:flex; align-items:center; gap:8px;
+    background:#eef4ec; border:1px solid var(--sage);
+    color:var(--sage-deep); border-radius:12px;
+    padding:11px 14px; font-size:13px; font-weight:600; margin-bottom:16px;
+  }
+
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:var(--radius); padding:20px; margin-bottom:16px;
+    transition:border-color 0.25s ease;
+  }
+  .card.complete{ border-color:var(--sage); }
+  .card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px; }
+  .card-title{ font-family:'Fraunces',serif; font-size:19px; font-weight:400; margin:0 0 3px; color:#4f6157; }
+  .card-sub{ font-size:12.5px; color:var(--ink-soft); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .routine-badge{
+    display:inline-flex; align-items:center; gap:3px;
+    font-size:10.5px; font-weight:600; padding:2px 7px; border-radius:20px;
+  }
+  .routine-badge.am{ background:#fbeedb; color:var(--am); }
+  .routine-badge.pm{ background:#e6eaf3; color:var(--pm); }
+  .area-badge{
+    display:inline-flex; align-items:center; gap:3px;
+    font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:20px;
+    background:#eaf1ee; color:#5f8578;
+  }
+  .area-group{ margin-bottom:14px; }
+  .area-group-head{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+    color:#8a978f; margin:0 0 7px 2px;
+  }
+  .ci-area{
+    font-size:10px; font-weight:600; padding:2px 7px; border-radius:20px;
+    background:#eaf1ee; color:#5f8578;
+  }
+  .area-select{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:18px; }
+  .area-opt{
+    padding:11px 6px; border-radius:12px; border:1.5px solid var(--line);
+    background:#fbfbf9; text-align:center; cursor:pointer;
+    font-size:12.5px; font-weight:600; color:var(--ink-soft);
+  }
+  .area-opt.active{ border-color:var(--sage); background:#eef4ec; color:var(--sage-deep); }
+  .card-right{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
+
+  .drop-progress{ position:relative; width:34px; height:34px; flex-shrink:0; }
+  .drop-bg{ fill:none; stroke:var(--line); stroke-width:3; }
+  .drop-fill{ fill:none; stroke:var(--sage); stroke-width:3; stroke-linecap:round; transition:stroke-dasharray 0.4s ease; }
+  .drop-count{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--ink-soft);
+  }
+  .remove-btn{ border:none; background:none; color:#c9c2b8; cursor:pointer; padding:4px; display:flex; }
+  .remove-btn:hover{ color:var(--rose-deep); }
+
+  .slot-row{ margin-bottom:12px; }
+  .slot-row:last-child{ margin-bottom:0; }
+  .slot-label{
+    display:flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:7px;
+  }
+  .slot-label.am{ color:var(--am); }
+  .slot-label.pm{ color:var(--pm); }
+
+  .days-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .plan-day{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    padding:7px 2px 8px; border-radius:12px;
+    border:1px solid var(--line); background:#fafbf8; color:#c0c8bd; cursor:default;
+  }
+  .plan-day .dname{ font-size:9px; font-weight:600; text-transform:uppercase; }
+  .plan-day .dnum{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; }
+  .plan-day .dstate{ height:11px; display:flex; align-items:center; }
+  .plan-day.planned{ background:#fff; color:var(--ink-soft); }
+  .plan-day.planned.am{ border-color:#ecd3b2; }
+  .plan-day.planned.pm{ border-color:#c8d1e2; }
+  .plan-day.done.am{ background:var(--am); border-color:var(--am); color:#fff; }
+  .plan-day.done.pm{ background:var(--pm); border-color:var(--pm); color:#fff; }
+  .plan-day.missed{ border-color:var(--rose); background:#fdf4f5; color:var(--rose-deep); }
+  .plan-day.today-ring{ box-shadow:0 0 0 1.5px var(--gold); }
+
+  .complete-tag{ margin-top:12px; font-size:12px; color:var(--sage-deep); font-weight:600; display:flex; align-items:center; gap:5px; }
+
+  .fab{
+    position:fixed; right:22px; bottom:26px;
+    width:56px; height:56px; border-radius:50%;
+    background:var(--rose); color:#fff; border:none;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:0 10px 24px rgba(193,112,122,0.4);
+  }
+  .fab:hover{background:var(--rose-deep);}
+  .fab:active{transform:scale(0.94);}
+
+  .sheet-overlay{
+    position:fixed; inset:0; background:rgba(31,46,40,0.32);
+    display:flex; align-items:flex-end; justify-content:center; z-index:50;
+    opacity:0; pointer-events:none; transition:opacity 0.2s ease;
+  }
+  .sheet-overlay.open{opacity:1;pointer-events:auto;}
+  .sheet{
+    background:#fff; width:100%; max-width:520px;
+    border-radius:24px 24px 0 0; padding:26px 24px 32px;
+    transform:translateY(20px); transition:transform 0.25s ease;
+    max-height:88vh; overflow-y:auto;
+  }
+  .sheet-overlay.open .sheet{transform:translateY(0);}
+  .sheet-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .sheet-top h2{ font-family:'Fraunces',serif; font-weight:500; font-size:20px; margin:0; }
+  .close-btn{ border:none; background:none; cursor:pointer; color:var(--ink-soft); padding:4px; }
+  label.field-label{
+    display:block; font-size:11.5px; font-weight:600; color:var(--ink-soft);
+    text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;
+  }
+  input[type=text]{
+    width:100%; padding:13px 15px; border-radius:12px; border:1px solid var(--line);
+    font-size:15px; font-family:'Inter',sans-serif; margin-bottom:18px; background:#fbfbf9;
+  }
+  input[type=text]:focus{outline:2px solid var(--sage);outline-offset:1px;}
+
+  .routine-select{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:18px; }
+  .routine-opt{
+    padding:12px 6px; border-radius:12px; border:1.5px solid var(--line);
+    background:#fbfbf9; text-align:center; cursor:pointer;
+    font-size:12.5px; font-weight:600; color:var(--ink-soft);
+  }
+  .routine-opt svg{ display:block; margin:0 auto 5px; }
+  .routine-opt.active{ border-color:var(--sage); background:#eef4ec; color:var(--sage-deep); }
+
+  .plan-picker{ margin-bottom:16px; }
+  .plan-picker-label{
+    display:flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+    margin-bottom:8px;
+  }
+  .plan-picker-label.am{ color:var(--am); }
+  .plan-picker-label.pm{ color:var(--pm); }
+  .plan-days{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .pd-btn{
+    padding:10px 2px; border-radius:11px; border:1.5px solid var(--line);
+    background:#fbfbf9; cursor:pointer; text-align:center;
+    font-size:10.5px; font-weight:600; text-transform:uppercase; color:var(--ink-soft);
+    font-family:'Inter',sans-serif;
+  }
+  .pd-btn.on.am{ background:var(--am); border-color:var(--am); color:#fff; }
+  .pd-btn.on.pm{ background:var(--pm); border-color:var(--pm); color:#fff; }
+  .plan-hint{ font-size:12px; color:var(--ink-soft); margin:6px 0 0; }
+
+  .primary-btn{
+    width:100%; padding:15px; border-radius:14px; border:none;
+    background:var(--rose); color:#fff; font-size:15px; font-weight:600;
+    font-family:'Inter',sans-serif; cursor:pointer; margin-top:6px;
+  }
+  .primary-btn:disabled{opacity:0.35;cursor:not-allowed;}
+  .primary-btn:not(:disabled):active{transform:scale(0.98);}
+
+  .toast{
+    position:fixed; top:22px; left:50%;
+    transform:translateX(-50%) translateY(-10px);
+    background:#6a7c72; color:#fff; padding:13px 18px; border-radius:12px;
+    font-size:13.5px; max-width:88%; text-align:center;
+    box-shadow:0 12px 30px rgba(0,0,0,0.18); z-index:60;
+    opacity:0; transition:opacity 0.25s ease, transform 0.25s ease;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .storage-note{
+    margin:0 0 20px; padding:11px 14px; background:#fbf3ec;
+    border:1px solid #edd9c4; border-radius:12px; font-size:12.5px;
+    color:#7a5b39; display:none;
+  }
+  .storage-note.show{display:block;}
+
+  .empty{ text-align:center; padding:60px 20px; color:var(--ink-soft); }
+  .empty svg{margin-bottom:14px;opacity:0.5;}
+  .empty p{margin:2px 0;font-size:14px;}
+
+  .cal-sheet{
+    background:#fff; width:100%; max-width:380px; border-radius:24px;
+    padding:22px 22px 26px; margin:0 20px;
+  }
+  .cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .cal-header .cal-month{ font-family:'Fraunces',serif; font-size:17px; font-weight:400; color:#5a6b61; }
+  .cal-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:6px; }
+  .cal-weekdays span{ text-align:center; font-size:10.5px; font-weight:600; color:var(--ink-soft); text-transform:uppercase; }
+  .cal-days{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+  .cal-day{
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+    border-radius:10px; font-size:13px; font-family:'IBM Plex Mono',monospace;
+    cursor:pointer; border:none; background:none; color:#6c7a72; font-weight:400;
+  }
+  .cal-day:hover{background:#eef0e9;}
+  .cal-day.other-month{ color:#d3d6cc; }
+  .cal-day.today{ box-shadow:inset 0 0 0 1.5px var(--gold); font-weight:600; }
+  .cal-day.in-week{ background:#eaf0e9; }
+  .cal-day.in-week.today{ background:var(--sage); color:#fff; box-shadow:none; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C12 2 5 10.5 5 15a7 7 0 0 0 14 0c0-4.5-7-13-7-13z"/><path d="M12 8v13"/></svg>
+      Weekly skincare planner
+    </div>
+    <h1>My Routine</h1>
+    <p class="tagline">Plan the week, then check it off — morning and night.</p>
+    <div class="week-nav">
+      <button class="nav-arrow" id="prevWeek" aria-label="Previous week">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="week-range-btn" id="calToggle">
+        <div>
+          <div class="wr-text" id="weekRangeText"></div>
+          <div class="wr-sub">tap to open calendar</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </button>
+      <button class="nav-arrow" id="nextWeek" aria-label="Next week">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <button class="today-pill" id="todayPill" style="display:none;">Back to this week</button>
+  </header>
+
+  <div class="storage-note" id="storageNote">Your browser is blocking saved storage (private/incognito mode, or storage disabled), so entries will only last this visit.</div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabChecklist">Today's checklist</button>
+    <button class="tab" id="tabPlan">Weekly plan</button>
+  </div>
+
+  <div id="checklistView">
+    <div class="day-picker" id="dayPicker"></div>
+    <div id="checklistBody"></div>
+  </div>
+
+  <div id="planView" style="display:none;">
+    <div id="productList"></div>
+    <div class="empty" id="emptyState" style="display:none;">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#7C9885" stroke-width="1.6"><path d="M12 2C12 2 5 10.5 5 15a7 7 0 0 0 14 0c0-4.5-7-13-7-13z"/></svg>
+      <p>Your shelf is empty for now.</p>
+      <p>Tap the + below to plan your first product.</p>
+    </div>
+  </div>
+</div>
+
+<button class="fab" id="fabAdd" aria-label="Add product">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<div class="sheet-overlay" id="sheetOverlay">
+  <div class="sheet">
+    <div class="sheet-top">
+      <h2>Plan a product</h2>
+      <button class="close-btn" id="closeSheet">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <label class="field-label">Product name</label>
+    <input type="text" id="nameInput" placeholder="e.g. Niacinamide serum">
+
+    <label class="field-label">When is it used?</label>
+    <div class="routine-select" id="routineSelect">
+      <div class="routine-opt" data-routine="am">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>
+        Morning
+      </div>
+      <div class="routine-opt" data-routine="pm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        Evening
+      </div>
+      <div class="routine-opt active" data-routine="both">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        Both
+      </div>
+    </div>
+
+    <label class="field-label">Where is it applied?</label>
+    <div class="area-select" id="areaSelect">
+      <div class="area-opt active" data-area="face">Face</div>
+      <div class="area-opt" data-area="neck">Neck</div>
+      <div class="area-opt" data-area="both">Face + Neck</div>
+    </div>
+
+    <div id="planPickers"></div>
+
+    <button class="primary-btn" id="addBtn" disabled>Add to weekly plan</button>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="calendarOverlay">
+  <div class="cal-sheet">
+    <div class="cal-header">
+      <button class="nav-arrow" id="calPrevMonth">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="cal-month" id="calMonthLabel"></div>
+      <button class="nav-arrow" id="calNextMonth">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <div class="cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+    <div class="cal-days" id="calDays"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const STORAGE_KEY = 'skincare_plan_products_v3';
+  const USAGE_PREFIX = 'skincare_plan_usage_v3_';
+
+  let storageOK = true;
+  try{ localStorage.setItem('__t__','1'); localStorage.removeItem('__t__'); }catch(e){ storageOK=false; }
+  let memoryStore = {};
+  function storeGet(key){
+    if(storageOK){ const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+    return memoryStore[key] || null;
+  }
+  function storeSet(key, value){
+    if(storageOK){ try{ localStorage.setItem(key, JSON.stringify(value)); return true; }catch(e){ return false; } }
+    memoryStore[key] = value; return true;
+  }
+  if(!storageOK){ document.getElementById('storageNote').classList.add('show'); }
+
+  function dateOnly(d){ const nd=new Date(d); nd.setHours(0,0,0,0); return nd; }
+  function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function getWeekKey(d){
+    const date = dateOnly(d); const day = date.getDay();
+    const sunday = new Date(date); sunday.setDate(date.getDate()-day);
+    return ymd(sunday);
+  }
+  function getWeekDates(weekKey){
+    const start = new Date(weekKey + 'T00:00:00');
+    return DAYS.map((_,i)=>{ const d=new Date(start); d.setDate(start.getDate()+i); return d; });
+  }
+  function formatRange(weekKey){
+    const dates = getWeekDates(weekKey);
+    const opts = {month:'short', day:'numeric'};
+    const y2 = dates[6].getFullYear();
+    const suffix = (y2 !== new Date().getFullYear()) ? ', '+y2 : '';
+    return dates[0].toLocaleDateString('en-US',opts)+' – '+dates[6].toLocaleDateString('en-US',opts)+suffix;
+  }
+  function sameDate(a,b){ return dateOnly(a).getTime() === dateOnly(b).getTime(); }
+
+  const REAL_TODAY = dateOnly(new Date());
+  const REAL_TODAY_WEEKKEY = getWeekKey(REAL_TODAY);
+
+  let currentWeekKey = REAL_TODAY_WEEKKEY;
+  let weekDates = getWeekDates(currentWeekKey);
+  let products = storeGet(STORAGE_KEY) || [];
+  let usage = storeGet(USAGE_PREFIX + currentWeekKey) || {};
+  let selectedDayIdx = (currentWeekKey === REAL_TODAY_WEEKKEY) ? REAL_TODAY.getDay() : 0;
+  let calMonthCursor = new Date(REAL_TODAY.getFullYear(), REAL_TODAY.getMonth(), 1);
+
+  function saveProducts(){ storeSet(STORAGE_KEY, products); }
+  function saveUsage(){ storeSet(USAGE_PREFIX + currentWeekKey, usage); }
+
+  function slotsForProduct(p){
+    if(p.routine === 'am') return ['am'];
+    if(p.routine === 'pm') return ['pm'];
+    return ['am','pm'];
+  }
+  function isPlanned(p, dayIdx, slot){
+    return !!(p.plan && p.plan[slot] && p.plan[slot][dayIdx]);
+  }
+  function isDone(pid, dayIdx, slot){
+    const u = usage[pid];
+    return !!(u && u[dayIdx] && u[dayIdx][slot]);
+  }
+  function setDone(pid, dayIdx, slot, val){
+    if(!usage[pid]) usage[pid] = DAYS.map(()=>({am:false,pm:false}));
+    usage[pid][dayIdx][slot] = val;
+    saveUsage();
+  }
+  function plannedCount(p){
+    let c=0;
+    slotsForProduct(p).forEach(s=>{ (p.plan[s]||[]).forEach(v=>{ if(v) c++; }); });
+    return c;
+  }
+  function doneCount(p){
+    let c=0;
+    slotsForProduct(p).forEach(s=>{
+      DAYS.forEach((_,i)=>{ if(isPlanned(p,i,s) && isDone(p.id,i,s)) c++; });
+    });
+    return c;
+  }
+  function productWeekComplete(p){
+    const total = plannedCount(p);
+    return total>0 && doneCount(p) >= total;
+  }
+
+  function setWeek(anchorDate){
+    currentWeekKey = getWeekKey(anchorDate);
+    weekDates = getWeekDates(currentWeekKey);
+    usage = storeGet(USAGE_PREFIX + currentWeekKey) || {};
+    selectedDayIdx = (currentWeekKey === REAL_TODAY_WEEKKEY) ? REAL_TODAY.getDay() : 0;
+    renderHeader();
+    renderAll();
+  }
+
+  function renderHeader(){
+    document.getElementById('weekRangeText').textContent = formatRange(currentWeekKey);
+    document.getElementById('todayPill').style.display =
+      (currentWeekKey === REAL_TODAY_WEEKKEY) ? 'none' : 'inline-block';
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 3200);
+  }
+
+  function checkIcon(sz){
+    sz = sz || 12;
+    return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  }
+  function sunIcon(){
+    return '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>';
+  }
+  function moonIcon(){
+    return '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+  function escapeHtml(s){ const div=document.createElement('div'); div.textContent=s; return div.innerHTML; }
+  function areaLabel(a){ return a==='neck' ? 'Neck' : a==='both' ? 'Face + Neck' : 'Face'; }
+  function areaOf(p){ return p.area || 'face'; }
+
+  function renderAll(){
+    renderDayPicker();
+    renderChecklist();
+    renderPlan();
+  }
+
+  function renderDayPicker(){
+    const el = document.getElementById('dayPicker');
+    el.innerHTML = weekDates.map((d,i)=>{
+      const isToday = sameDate(d, REAL_TODAY);
+      const isSelected = i === selectedDayIdx;
+      const classes = ['day-pill'];
+      if(isSelected) classes.push('selected');
+      if(isToday) classes.push('today');
+
+      let plannedItems = [];
+      products.forEach(p=>{
+        slotsForProduct(p).forEach(s=>{
+          if(isPlanned(p,i,s)) plannedItems.push(isDone(p.id,i,s));
+        });
+      });
+      let dots = '<span class="load-dots">'
+        + plannedItems.slice(0,4).map(done=>'<i class="'+(done?'done':'')+'"></i>').join('')
+        + '</span>';
+
+      return '<button class="'+classes.join(' ')+'" data-day="'+i+'">'
+        + '<span class="dname">'+DAYS[i]+'</span>'
+        + '<span class="dnum">'+d.getDate()+'</span>'
+        + dots
+        + '</button>';
+    }).join('');
+    el.querySelectorAll('.day-pill').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        selectedDayIdx = parseInt(btn.getAttribute('data-day'),10);
+        renderAll();
+      });
+    });
+  }
+
+  function renderChecklist(){
+    const el = document.getElementById('checklistBody');
+    const d = weekDates[selectedDayIdx];
+    const label = d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+    const isFutureDay = dateOnly(d).getTime() > REAL_TODAY.getTime();
+
+    const amItems = [], pmItems = [];
+    products.forEach(p=>{
+      if(isPlanned(p, selectedDayIdx, 'am')) amItems.push(p);
+      if(isPlanned(p, selectedDayIdx, 'pm')) pmItems.push(p);
+    });
+
+    const totalPlanned = amItems.length + pmItems.length;
+    let totalDone = 0;
+    amItems.forEach(p=>{ if(isDone(p.id,selectedDayIdx,'am')) totalDone++; });
+    pmItems.forEach(p=>{ if(isDone(p.id,selectedDayIdx,'pm')) totalDone++; });
+    const dayComplete = totalPlanned>0 && totalDone===totalPlanned;
+
+    let html = '<p class="checklist-day-title">'+label+'</p>';
+    html += '<p class="checklist-day-sub">'+(totalPlanned===0 ? 'Rest day — nothing planned' : totalDone+' of '+totalPlanned+' done')+'</p>';
+
+    if(dayComplete){
+      html += '<div class="day-complete-banner">'+checkIcon(14)+' All done for this day.</div>';
+    }
+
+    if(totalPlanned===0){
+      html += '<div class="rest-day"><p>🌿</p><p>Nothing planned for this day.</p><p>Add products using the + button below.</p></div>';
+      el.innerHTML = html;
+      return;
+    }
+
+    function itemHtml(p, slot){
+      const done = isDone(p.id, selectedDayIdx, slot);
+      return '<div class="check-item '+(done?'done':'')+'" data-pid="'+p.id+'" data-slot="'+slot+'">'
+        + '<span class="box">'+(done?checkIcon():'')+'</span>'
+        + '<span class="ci-name">'+escapeHtml(p.name)+'</span>'
+        + (isFutureDay ? '<span class="ci-note">upcoming</span>' : '')
+        + '</div>';
+    }
+
+    function slotSection(items, slot, headIcon, headName){
+      let s = '<div class="slot-section"><div class="slot-head '+slot+'">'+headIcon+' '+headName+'</div>';
+      if(items.length===0){ s += '<p class="slot-empty">Nothing planned</p>'; return s + '</div>'; }
+
+      const faceItems = items.filter(p=>areaOf(p)==='face' || areaOf(p)==='both');
+      const neckItems = items.filter(p=>areaOf(p)==='neck' || areaOf(p)==='both');
+      const bothAreasUsed = faceItems.length>0 && neckItems.length>0;
+
+      if(!bothAreasUsed){
+        items.forEach(p=>{ s += itemHtml(p, slot); });
+      } else {
+        if(faceItems.length){
+          s += '<div class="area-group"><p class="area-group-head">Face</p>';
+          faceItems.forEach(p=>{ s += itemHtml(p, slot); });
+          s += '</div>';
+        }
+        if(neckItems.length){
+          s += '<div class="area-group"><p class="area-group-head">Neck</p>';
+          neckItems.forEach(p=>{ s += itemHtml(p, slot); });
+          s += '</div>';
+        }
+      }
+      s += '</div>';
+      return s;
+    }
+
+    html += slotSection(amItems, 'am', sunIcon(), 'Morning');
+    html += slotSection(pmItems, 'pm', moonIcon(), 'Evening');
+    el.innerHTML = html;
+
+    el.querySelectorAll('.check-item').forEach(item=>{
+      item.addEventListener('click', ()=>{
+        toggleCheck(item.getAttribute('data-pid'), selectedDayIdx, item.getAttribute('data-slot'));
+      });
+    });
+  }
+
+  function toggleCheck(pid, dayIdx, slot){
+    const product = products.find(p=>p.id===pid);
+    if(!product) return;
+    const was = isDone(pid, dayIdx, slot);
+    setDone(pid, dayIdx, slot, !was);
+    if(!was && productWeekComplete(product)){
+      showToast(product.name + ': all planned uses done for this week ✅');
+    }
+    renderAll();
+  }
+
+  function renderPlan(){
+    const list = document.getElementById('productList');
+    const empty = document.getElementById('emptyState');
+    list.innerHTML = '';
+
+    if(products.length === 0){ empty.style.display='block'; return; }
+    empty.style.display = 'none';
+
+    products.forEach(p=>{
+      const total = plannedCount(p);
+      const done = doneCount(p);
+      const complete = productWeekComplete(p);
+      const slots = slotsForProduct(p);
+
+      const card = document.createElement('div');
+      card.className = 'card' + (complete ? ' complete' : '');
+
+      const badges = slots.map(s=>'<span class="routine-badge '+s+'">'+(s==='am'?sunIcon()+' AM':moonIcon()+' PM')+'</span>').join('');
+
+      const r = 14, circ = 2*Math.PI*r;
+      const pct = total>0 ? Math.min(done/total,1) : 0;
+      const ring = '<div class="drop-progress"><svg width="34" height="34" viewBox="0 0 34 34">'
+        + '<circle class="drop-bg" cx="17" cy="17" r="'+r+'"></circle>'
+        + '<circle class="drop-fill" cx="17" cy="17" r="'+r+'" stroke-dasharray="'+(circ*pct)+' '+circ+'" transform="rotate(-90 17 17)"></circle>'
+        + '</svg><div class="drop-count">'+done+'/'+total+'</div></div>';
+
+      const slotRows = slots.map(slot=>{
+        const cells = DAYS.map((dn,i)=>{
+          const planned = isPlanned(p,i,slot);
+          const dDone = planned && isDone(p.id,i,slot);
+          const dDate = weekDates[i];
+          const past = dateOnly(dDate).getTime() < REAL_TODAY.getTime();
+          const missed = planned && !dDone && past;
+          const isToday = sameDate(dDate, REAL_TODAY);
+          const classes = ['plan-day'];
+          if(planned) classes.push('planned', slot);
+          if(dDone) classes.push('done', slot);
+          if(missed) classes.push('missed');
+          if(isToday) classes.push('today-ring');
+          let state = '';
+          if(dDone) state = checkIcon(11);
+          else if(missed) state = '·';
+          return '<div class="'+classes.join(' ')+'">'
+            + '<span class="dname">'+dn+'</span>'
+            + '<span class="dnum">'+dDate.getDate()+'</span>'
+            + '<span class="dstate">'+state+'</span>'
+            + '</div>';
+        }).join('');
+        return '<div class="slot-row"><div class="slot-label '+slot+'">'+(slot==='am'?sunIcon()+' Morning':moonIcon()+' Evening')+'</div>'
+          + '<div class="days-grid">'+cells+'</div></div>';
+      }).join('');
+
+      card.innerHTML =
+        '<div class="card-top">'
+        + '<div><p class="card-title">'+escapeHtml(p.name)+'</p>'
+        + '<p class="card-sub">Planned '+total+'× this week '+badges+'<span class="area-badge">'+areaLabel(areaOf(p))+'</span></p></div>'
+        + '<div class="card-right">'+ring
+        + '<button class="remove-btn" data-remove="'+p.id+'" aria-label="Remove"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
+        + '</div></div>'
+        + slotRows
+        + (complete ? '<div class="complete-tag">'+checkIcon()+' All planned uses complete this week</div>' : '');
+
+      list.appendChild(card);
+    });
+
+    document.querySelectorAll('[data-remove]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        products = products.filter(p=>p.id!==btn.getAttribute('data-remove'));
+        saveProducts();
+        renderAll();
+      });
+    });
+  }
+
+  // tabs
+  const tabChecklist = document.getElementById('tabChecklist');
+  const tabPlan = document.getElementById('tabPlan');
+  const checklistView = document.getElementById('checklistView');
+  const planView = document.getElementById('planView');
+  function setTab(t){
+    tabChecklist.classList.toggle('active', t==='checklist');
+    tabPlan.classList.toggle('active', t==='plan');
+    checklistView.style.display = t==='checklist' ? 'block' : 'none';
+    planView.style.display = t==='plan' ? 'block' : 'none';
+  }
+  tabChecklist.addEventListener('click', ()=>setTab('checklist'));
+  tabPlan.addEventListener('click', ()=>setTab('plan'));
+
+  // add sheet
+  const overlay = document.getElementById('sheetOverlay');
+  const nameInput = document.getElementById('nameInput');
+  const addBtn = document.getElementById('addBtn');
+  const planPickers = document.getElementById('planPickers');
+  let selectedRoutine = 'both';
+  let selectedArea = 'face';
+  let draftPlan = { am:DAYS.map(()=>false), pm:DAYS.map(()=>false) };
+
+  function activeSlots(){
+    return selectedRoutine==='am' ? ['am'] : selectedRoutine==='pm' ? ['pm'] : ['am','pm'];
+  }
+  function renderPlanPickers(){
+    planPickers.innerHTML = activeSlots().map(slot=>{
+      const btns = DAYS.map((d,i)=>{
+        const on = draftPlan[slot][i];
+        return '<button type="button" class="pd-btn '+(on?'on '+slot:'')+'" data-slot="'+slot+'" data-day="'+i+'">'+d+'</button>';
+      }).join('');
+      const label = slot==='am' ? sunIcon()+' Morning — pick days' : moonIcon()+' Evening — pick days';
+      return '<div class="plan-picker"><div class="plan-picker-label '+slot+'">'+label+'</div>'
+        + '<div class="plan-days">'+btns+'</div></div>';
+    }).join('')
+    + '<p class="plan-hint" id="planHint"></p>';
+
+    planPickers.querySelectorAll('.pd-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const slot = btn.getAttribute('data-slot');
+        const day = parseInt(btn.getAttribute('data-day'),10);
+        draftPlan[slot][day] = !draftPlan[slot][day];
+        renderPlanPickers();
+        updateAddState();
+      });
+    });
+    updateHint();
+  }
+  function draftCount(){
+    let c=0; activeSlots().forEach(s=>draftPlan[s].forEach(v=>{if(v)c++;}));
+    return c;
+  }
+  function updateHint(){
+    const hint = document.getElementById('planHint');
+    if(!hint) return;
+    const c = draftCount();
+    hint.textContent = c===0 ? 'Pick at least one day.' : 'Planned '+c+'× per week.';
+  }
+  function updateAddState(){
+    addBtn.disabled = nameInput.value.trim().length===0 || draftCount()===0;
+    updateHint();
+  }
+
+  function openSheet(){
+    overlay.classList.add('open');
+    nameInput.value = '';
+    selectedRoutine = 'both';
+    selectedArea = 'face';
+    draftPlan = { am:DAYS.map(()=>false), pm:DAYS.map(()=>false) };
+    document.querySelectorAll('.routine-opt').forEach(o=>o.classList.toggle('active', o.getAttribute('data-routine')==='both'));
+    document.querySelectorAll('.area-opt').forEach(o=>o.classList.toggle('active', o.getAttribute('data-area')==='face'));
+    renderPlanPickers();
+    addBtn.disabled = true;
+    setTimeout(()=>nameInput.focus(), 200);
+  }
+  function closeSheet(){ overlay.classList.remove('open'); }
+
+  document.getElementById('fabAdd').addEventListener('click', openSheet);
+  document.getElementById('closeSheet').addEventListener('click', closeSheet);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeSheet(); });
+  nameInput.addEventListener('input', updateAddState);
+
+  document.querySelectorAll('.routine-opt').forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      selectedRoutine = opt.getAttribute('data-routine');
+      document.querySelectorAll('.routine-opt').forEach(o=>o.classList.remove('active'));
+      opt.classList.add('active');
+      renderPlanPickers();
+      updateAddState();
+    });
+  });
+
+  document.querySelectorAll('.area-opt').forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      selectedArea = opt.getAttribute('data-area');
+      document.querySelectorAll('.area-opt').forEach(o=>o.classList.remove('active'));
+      opt.classList.add('active');
+    });
+  });
+
+  addBtn.addEventListener('click', ()=>{
+    const name = nameInput.value.trim();
+    if(!name || draftCount()===0) return;
+    const plan = {};
+    activeSlots().forEach(s=>{ plan[s] = draftPlan[s].slice(); });
+    products.push({ id:'p_'+Date.now(), name, routine:selectedRoutine, area:selectedArea, plan });
+    saveProducts();
+    closeSheet();
+    renderAll();
+  });
+
+  // week navigation
+  document.getElementById('prevWeek').addEventListener('click', ()=>{
+    const d = new Date(currentWeekKey+'T00:00:00'); d.setDate(d.getDate()-7); setWeek(d);
+  });
+  document.getElementById('nextWeek').addEventListener('click', ()=>{
+    const d = new Date(currentWeekKey+'T00:00:00'); d.setDate(d.getDate()+7); setWeek(d);
+  });
+  document.getElementById('todayPill').addEventListener('click', ()=>{ setWeek(new Date()); });
+
+  // calendar
+  const calOverlay = document.getElementById('calendarOverlay');
+  const calDaysEl = document.getElementById('calDays');
+  const calMonthLabel = document.getElementById('calMonthLabel');
+
+  function openCalendar(){
+    calMonthCursor = new Date(currentWeekKey+'T00:00:00');
+    calMonthCursor.setDate(1);
+    renderCalendar();
+    calOverlay.classList.add('open');
+  }
+  function closeCalendar(){ calOverlay.classList.remove('open'); }
+
+  document.getElementById('calToggle').addEventListener('click', openCalendar);
+  calOverlay.addEventListener('click', (e)=>{ if(e.target===calOverlay) closeCalendar(); });
+  document.getElementById('calPrevMonth').addEventListener('click', ()=>{ calMonthCursor.setMonth(calMonthCursor.getMonth()-1); renderCalendar(); });
+  document.getElementById('calNextMonth').addEventListener('click', ()=>{ calMonthCursor.setMonth(calMonthCursor.getMonth()+1); renderCalendar(); });
+
+  function renderCalendar(){
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    calMonthLabel.textContent = monthNames[calMonthCursor.getMonth()]+' '+calMonthCursor.getFullYear();
+    const year=calMonthCursor.getFullYear(), month=calMonthCursor.getMonth();
+    const first=new Date(year,month,1);
+    const gridStart=new Date(first); gridStart.setDate(gridStart.getDate()-first.getDay());
+    const weekStart=new Date(currentWeekKey+'T00:00:00');
+    const weekEnd=new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6);
+
+    let html='';
+    for(let i=0;i<42;i++){
+      const cell=new Date(gridStart); cell.setDate(gridStart.getDate()+i);
+      const classes=['cal-day'];
+      if(cell.getMonth()!==month) classes.push('other-month');
+      if(sameDate(cell,REAL_TODAY)) classes.push('today');
+      if(cell.getTime()>=weekStart.getTime() && cell.getTime()<=weekEnd.getTime()) classes.push('in-week');
+      html+='<button class="'+classes.join(' ')+'" data-y="'+cell.getFullYear()+'" data-m="'+cell.getMonth()+'" data-d="'+cell.getDate()+'">'+cell.getDate()+'</button>';
+    }
+    calDaysEl.innerHTML=html;
+    calDaysEl.querySelectorAll('.cal-day').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        setWeek(new Date(parseInt(btn.getAttribute('data-y'),10), parseInt(btn.getAttribute('data-m'),10), parseInt(btn.getAttribute('data-d'),10)));
+        closeCalendar();
+      });
+    });
+  }
+
+  renderHeader();
+  renderAll();
+})();
+</script>
+</body>
+</html>
